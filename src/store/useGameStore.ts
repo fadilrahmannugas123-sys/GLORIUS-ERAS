@@ -34,9 +34,11 @@ interface GameState {
   introComplete: boolean;
   squad: Player[];
   achievements: Achievement[];
+  isSaving: boolean;
   setScene: (scene: GameState['scene']) => void;
   setLoaded: (loaded: boolean) => void;
   setIntroComplete: (complete: boolean) => void;
+  setSaving: (isSaving: boolean) => void;
   updateSquad: (squad: Player[]) => void;
   updatePlayer: (index: number, player: Player) => void;
   updateAchievements: (achievements: Achievement[]) => void;
@@ -118,9 +120,11 @@ export const useGameStore = create<GameState>((set) => ({
   introComplete: false,
   squad: MOCK_SQUAD,
   achievements: MOCK_ACHIEVEMENTS,
+  isSaving: false,
   setScene: (scene) => set({ scene }),
   setLoaded: (loaded) => set({ isLoaded: loaded }),
   setIntroComplete: (complete) => set({ introComplete: complete }),
+  setSaving: (isSaving) => set({ isSaving }),
   updateSquad: (squad) => set({ squad }),
   updatePlayer: (index, player) => set((state) => {
     const newSquad = [...state.squad];

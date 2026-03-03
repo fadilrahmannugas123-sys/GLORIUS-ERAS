@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, updateDoc, onSnapshot, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Player } from '../store/useGameStore';
 
@@ -42,8 +42,20 @@ export const squadService = {
       console.error('updateSquad: squad is not an array', squad);
       return;
     }
-    const promises = squad.map(player => squadService.savePlayer(player));
-    await Promise.all(promises);
+    
+    try {
+      const batch = writeBatch(db);
+      squad.forEach(player => {
+        if (player && player.id) {
+          const playerRef = doc(db, SQUAD_COLLECTION, String(player.id));
+          batch.set(playerRef, player, { merge: true });
+        }
+      });
+      await batch.commit();
+    } catch (error) {
+      console.error('Error in updateSquad batch:', error);
+      throw error;
+    }
   },
 
   async saveAchievement(achievement: any) {
@@ -58,8 +70,19 @@ export const squadService = {
   },
 
   async updateAchievements(achievements: any[]) {
-    const promises = achievements.map(ach => squadService.saveAchievement(ach));
-    await Promise.all(promises);
+    try {
+      const batch = writeBatch(db);
+      achievements.forEach(ach => {
+        if (ach && ach.id) {
+          const achRef = doc(db, ACHIEVEMENTS_COLLECTION, String(ach.id));
+          batch.set(achRef, ach, { merge: true });
+        }
+      });
+      await batch.commit();
+    } catch (error) {
+      console.error('Error in updateAchievements batch:', error);
+      throw error;
+    }
   },
 
   async deleteAchievement(achId: string) {

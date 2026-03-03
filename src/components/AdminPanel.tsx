@@ -5,7 +5,7 @@ import { LogIn, LayoutDashboard, Users, Trophy, X, Save, Cloud } from 'lucide-re
 import { squadService } from '../services/squadService';
 
 export function AdminPanel() {
-  const { setScene, squad, updatePlayer, updateSquad, achievements, updateAchievements } = useGameStore();
+  const { setScene, squad, updatePlayer, updateSquad, achievements, updateAchievements, isSaving, setSaving } = useGameStore();
   const [adminKey, setAdminKey] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -18,20 +18,25 @@ export function AdminPanel() {
   useEffect(() => {
     if (isLoggedIn) {
       const unsubscribeSquad = squadService.subscribeToSquad((remoteSquad) => {
-        updateSquad(remoteSquad);
+        if (!isSaving) {
+          updateSquad(remoteSquad);
+        }
       });
       const unsubscribeAchs = squadService.subscribeToAchievements((remoteAchs) => {
-        updateAchievements(remoteAchs);
+        if (!isSaving) {
+          updateAchievements(remoteAchs);
+        }
       });
       return () => {
         unsubscribeSquad();
         unsubscribeAchs();
       };
     }
-  }, [isLoggedIn, updateSquad, updateAchievements]);
+  }, [isLoggedIn, updateSquad, updateAchievements, isSaving]);
 
   const handleSaveToCloud = async () => {
     setIsSyncing(true);
+    setSaving(true);
     try {
       await squadService.updateSquad(squad);
       alert('Squad successfully synced to Firebase!');
@@ -40,11 +45,13 @@ export function AdminPanel() {
       alert('Failed to sync squad. Check console.');
     } finally {
       setIsSyncing(false);
+      setSaving(false);
     }
   };
 
   const handleSaveAchievementsToCloud = async () => {
     setIsSyncingAchievements(true);
+    setSaving(true);
     try {
       await squadService.updateAchievements(achievements);
       // Also save squad because achievement assignments are stored in player objects
@@ -55,11 +62,13 @@ export function AdminPanel() {
       alert('Failed to sync achievements. Check console.');
     } finally {
       setIsSyncingAchievements(false);
+      setSaving(false);
     }
   };
 
   const handleSavePlayer = async (player: Player) => {
     setSavingPlayerId(player.id);
+    setSaving(true);
     try {
       await squadService.savePlayer(player);
       // Optional: show a small toast or temporary success state
@@ -68,16 +77,17 @@ export function AdminPanel() {
       alert(`Failed to save ${player.name}.`);
     } finally {
       setSavingPlayerId(null);
+      setSaving(false);
     }
   };
 
   if (!isLoggedIn) {
     return (
-      <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
+      <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 overflow-y-auto custom-scrollbar">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl"
+          className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl my-auto"
         >
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-black italic text-white">ADMIN <span className="text-yellow-500">ACCESS</span></h2>

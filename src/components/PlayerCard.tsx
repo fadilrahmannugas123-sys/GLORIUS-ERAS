@@ -52,7 +52,7 @@ export function PlayerPreview({ player, onClose }: { player: Player; onClose: ()
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-8"
+      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl overflow-y-auto custom-scrollbar flex flex-col items-center justify-start p-4 md:p-8"
     >
       <AnimatePresence mode="wait">
         {viewMode === 'brief' ? (
@@ -61,7 +61,7 @@ export function PlayerPreview({ player, onClose }: { player: Player; onClose: ()
             initial={{ scale: 0.8, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 1.1, opacity: 0, y: -50 }}
-            className="relative w-full max-w-lg bg-zinc-900 border border-white/20 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col"
+            className="relative w-full max-w-lg bg-zinc-900 border border-white/20 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col my-auto"
           >
             <button 
               onClick={onClose}
@@ -112,7 +112,7 @@ export function PlayerPreview({ player, onClose }: { player: Player; onClose: ()
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative w-full max-w-5xl bg-zinc-900 border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[90vh] md:h-auto"
+            className="relative w-full max-w-5xl bg-zinc-900 border border-white/10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-fit md:h-auto my-auto"
           >
             <div className="absolute top-6 right-6 z-30 flex gap-3">
               <button 
@@ -130,7 +130,7 @@ export function PlayerPreview({ player, onClose }: { player: Player; onClose: ()
             </div>
 
             {/* Left: Image & Identity */}
-            <div className="w-full md:w-2/5 relative h-1/3 md:h-auto">
+            <div className="w-full md:w-2/5 relative h-64 sm:h-80 md:h-auto shrink-0">
               <img 
                 src={player.image} 
                 alt={player.name}
@@ -138,18 +138,18 @@ export function PlayerPreview({ player, onClose }: { player: Player; onClose: ()
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/20 to-transparent" />
-              <div className="absolute bottom-12 left-12">
-                <div className="text-8xl font-black text-yellow-500 italic leading-none mb-4 drop-shadow-2xl">{player.rating}</div>
-                <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">{player.name}</h2>
+              <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12">
+                <div className="text-6xl md:text-8xl font-black text-yellow-500 italic leading-none mb-2 md:mb-4 drop-shadow-2xl">{player.rating}</div>
+                <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">{player.name}</h2>
                 <div className="flex items-center gap-3">
-                  <div className="h-[2px] w-12 bg-yellow-500" />
-                  <p className="text-xl font-bold text-yellow-500/80 tracking-[0.2em] uppercase">{player.role}</p>
+                  <div className="h-[2px] w-8 md:w-12 bg-yellow-500" />
+                  <p className="text-sm md:text-xl font-bold text-yellow-500/80 tracking-[0.2em] uppercase">{player.role}</p>
                 </div>
               </div>
             </div>
 
             {/* Right: Detailed Portfolio */}
-            <div className="w-full md:w-3/5 p-8 md:p-16 flex flex-col overflow-y-auto custom-scrollbar">
+            <div className="w-full md:w-3/5 p-6 md:p-16 flex flex-col md:overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                 <div>
                   <div className="flex items-center gap-2 mb-6">
