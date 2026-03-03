@@ -187,6 +187,43 @@ export function AdminPanel() {
                   </div>
                 </div>
 
+                <div className="bg-zinc-900 border border-white/10 rounded-xl p-8 mb-8">
+                  <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                    <Save size={18} className="text-yellow-500" /> EXPORT DATA FOR GITHUB
+                  </h4>
+                  <p className="text-white/60 text-sm mb-6">
+                    Use this to get the current data as JSON. You can then provide this to the AI to update the hardcoded "MOCK_DATA" in the source code, ensuring your latest changes are saved in the repository.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <button 
+                      onClick={() => {
+                        const data = { squad, achievements };
+                        console.log('--- CURRENT DATA JSON ---');
+                        console.log(JSON.stringify(data, null, 2));
+                        console.log('-------------------------');
+                        alert('Data exported to browser console! Open DevTools (F12) to copy it.');
+                      }}
+                      className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-bold text-sm transition-all"
+                    >
+                      EXPORT TO CONSOLE
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const data = { squad, achievements };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `squad_data_${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                      }}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-3 rounded-lg font-bold text-sm transition-all"
+                    >
+                      DOWNLOAD JSON FILE
+                    </button>
+                  </div>
+                </div>
+
                 <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
                   <p className="text-white/40 font-mono text-sm">
                     [SYSTEM]: Waiting for Firebase connection...<br />
