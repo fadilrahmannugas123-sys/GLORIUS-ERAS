@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useGameStore } from '../store/useGameStore';
-import { sounds } from '../lib/sounds';
 
 export function IntroSequence() {
   const { setIntroComplete, setScene } = useGameStore();
@@ -15,9 +14,6 @@ export function IntroSequence() {
         setScene('menu');
       }
     });
-
-    // Start ambience
-    sounds.ambience.play();
 
     tl.to(containerRef.current, { opacity: 1, duration: 2 })
       .fromTo(logoRef.current, 

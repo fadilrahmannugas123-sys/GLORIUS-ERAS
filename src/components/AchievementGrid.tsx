@@ -19,7 +19,7 @@ export function AchievementGrid({ achievements }: { achievements: Achievement[] 
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-8">
       {achievements.map((achievement) => (
         <motion.div
           key={achievement.id}

@@ -1,5 +1,5 @@
 {
   "name": "Glorious Eras",
-  "description": "An immersive game-like portfolio inspired by EA Sports FC Mobile, featuring a 3D stadium, player cards, and a cinematic experience.",
+  "description": "A high-performance interactive squad portfolio featuring 3D stadium environments, dynamic player cards, and real-time Firebase synchronization. Built with React Three Fiber, Framer Motion, and Tailwind CSS.",
   "requestFramePermissions": []
 }

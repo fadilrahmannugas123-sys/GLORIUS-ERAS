@@ -1,18 +1,17 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useGameStore } from '../store/useGameStore';
-import { playSound } from '../lib/sounds';
-import { Trophy, Users, Calendar, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Trophy, Users, Settings } from 'lucide-react';
 
 export function MainMenu() {
-  const { setScene, isMuted, toggleMute } = useGameStore();
+  const { setScene } = useGameStore();
 
   const menuItems = [
     { id: 'squad', label: 'MY SQUAD', icon: Users, color: 'from-gold-500 to-yellow-600' },
+    { id: 'achievements', label: 'ACHIEVEMENTS', icon: Trophy, color: 'from-purple-500 to-purple-700' },
     { id: 'admin', label: 'ADMIN PANEL', icon: Settings, color: 'from-gray-700 to-gray-900' },
   ];
 
   const handleNav = (scene: any) => {
-    playSound('click');
     setScene(scene);
   };
 
@@ -21,15 +20,20 @@ export function MainMenu() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-12"
+        className="text-center mb-16"
       >
-        <h1 className="text-6xl font-black tracking-tighter text-white italic">
-          GLORIOUS <span className="text-yellow-500">ERAS</span>
+        <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white italic relative">
+          <span className="relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">GLORIOUS</span>
+          <br />
+          <span className="text-yellow-500 drop-shadow-[0_0_30px_rgba(255,215,0,0.8)] animate-pulse">ERAS</span>
+          
+          {/* Background Glows */}
+          <div className="absolute inset-0 -z-10 blur-[60px] opacity-30 bg-yellow-500 rounded-full scale-150" />
+          <div className="absolute inset-0 -z-10 blur-[100px] opacity-20 bg-white rounded-full scale-110" />
         </h1>
-        <p className="text-yellow-500/60 font-mono tracking-[0.5em] text-xs mt-2">SQUAD PORTFOLIO</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pointer-events-auto px-6 max-w-7xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pointer-events-auto px-6 max-w-5xl w-full">
         {menuItems.map((item, index) => (
           <motion.button
             key={item.id}
@@ -48,15 +52,6 @@ export function MainMenu() {
           </motion.button>
         ))}
       </div>
-
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        onClick={toggleMute}
-        className="fixed bottom-8 right-8 p-4 rounded-full bg-black/40 border border-white/10 text-white pointer-events-auto hover:bg-white/10 transition-colors"
-      >
-        {isMuted ? <VolumeX /> : <Volume2 />}
-      </motion.button>
     </div>
   );
 }
