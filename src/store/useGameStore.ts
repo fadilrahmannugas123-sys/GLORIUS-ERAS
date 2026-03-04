@@ -34,6 +34,7 @@ interface GameState {
   introComplete: boolean;
   squad: Player[];
   achievements: Achievement[];
+  collagePhotos: string[];
   isSaving: boolean;
   setScene: (scene: GameState['scene']) => void;
   setLoaded: (loaded: boolean) => void;
@@ -42,6 +43,7 @@ interface GameState {
   updateSquad: (squad: Player[]) => void;
   updatePlayer: (index: number, player: Player) => void;
   updateAchievements: (achievements: Achievement[]) => void;
+  updateCollagePhotos: (photos: string[]) => void;
 }
 
 const MOCK_SQUAD: Player[] = [
@@ -120,6 +122,14 @@ export const useGameStore = create<GameState>((set) => ({
   introComplete: false,
   squad: MOCK_SQUAD,
   achievements: MOCK_ACHIEVEMENTS,
+  collagePhotos: [
+    'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1580136579312-94651dfd596d?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1576448046340-040998abc396?q=80&w=800&auto=format&fit=crop',
+  ],
   isSaving: false,
   setScene: (scene) => set({ scene }),
   setLoaded: (loaded) => set({ isLoaded: loaded }),
@@ -132,4 +142,5 @@ export const useGameStore = create<GameState>((set) => ({
     return { squad: newSquad };
   }),
   updateAchievements: (achievements) => set({ achievements }),
+  updateCollagePhotos: (photos) => set({ collagePhotos: photos }),
 }));

@@ -52,6 +52,11 @@
   }
 }
 
+@keyframes bg-shine {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
 @keyframes shine {
   0% { left: -100%; }
   20% { left: 100%; }

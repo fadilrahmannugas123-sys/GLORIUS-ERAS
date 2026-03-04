@@ -15,6 +15,12 @@ export function IntroSequence() {
       }
     });
 
+    // Fallback in case GSAP fails to fire onComplete
+    const fallback = setTimeout(() => {
+      setIntroComplete(true);
+      setScene('menu');
+    }, 8000);
+
     tl.to(containerRef.current, { opacity: 1, duration: 2 })
       .fromTo(logoRef.current, 
         { scale: 0.8, opacity: 0, filter: 'blur(20px)' },
@@ -30,6 +36,7 @@ export function IntroSequence() {
 
     return () => {
       tl.kill();
+      clearTimeout(fallback);
     };
   }, []);
 

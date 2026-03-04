@@ -5,14 +5,16 @@ import { LogIn, LayoutDashboard, Users, Trophy, X, Save, Cloud } from 'lucide-re
 import { squadService } from '../services/squadService';
 
 export function AdminPanel() {
-  const { setScene, squad, updatePlayer, updateSquad, achievements, updateAchievements, isSaving, setSaving } = useGameStore();
+  const { setScene, squad, updatePlayer, updateSquad, achievements, updateAchievements, collagePhotos, updateCollagePhotos, isSaving, setSaving } = useGameStore();
   const [adminKey, setAdminKey] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncingAchievements, setIsSyncingAchievements] = useState(false);
+  const [isSyncingSettings, setIsSyncingSettings] = useState(false);
   const [savingPlayerId, setSavingPlayerId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [tempCollagePhotos, setTempCollagePhotos] = useState<string[]>(collagePhotos);
 
   // Real-time sync from Firebase
   useEffect(() => {
@@ -27,12 +29,24 @@ export function AdminPanel() {
           updateAchievements(remoteAchs);
         }
       });
+      const unsubscribeSettings = squadService.subscribeToSettings((settings) => {
+        if (!isSaving && settings.collagePhotos) {
+          updateCollagePhotos(settings.collagePhotos);
+          setTempCollagePhotos(settings.collagePhotos);
+        }
+      });
       return () => {
         unsubscribeSquad();
         unsubscribeAchs();
+        unsubscribeSettings();
       };
     }
-  }, [isLoggedIn, updateSquad, updateAchievements, isSaving]);
+  }, [isLoggedIn, updateSquad, updateAchievements, updateCollagePhotos, isSaving]);
+
+  // Update temp photos when collagePhotos changes from sync
+  useEffect(() => {
+    setTempCollagePhotos(collagePhotos);
+  }, [collagePhotos]);
 
   const handleSaveToCloud = async () => {
     setIsSyncing(true);
@@ -62,6 +76,22 @@ export function AdminPanel() {
       alert('Failed to sync achievements. Check console.');
     } finally {
       setIsSyncingAchievements(false);
+      setSaving(false);
+    }
+  };
+
+  const handleSaveSettingsToCloud = async () => {
+    setIsSyncingSettings(true);
+    setSaving(true);
+    try {
+      await squadService.saveCollagePhotos(tempCollagePhotos);
+      updateCollagePhotos(tempCollagePhotos);
+      alert('Collage settings successfully synced to Firebase!');
+    } catch (error) {
+      console.error('Firebase Settings Sync Error:', error);
+      alert('Failed to sync settings. Check console.');
+    } finally {
+      setIsSyncingSettings(false);
       setSaving(false);
     }
   };
@@ -145,6 +175,7 @@ export function AdminPanel() {
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'squad', label: 'Squad Management', icon: Users },
             { id: 'achievements', label: 'Achievements', icon: Trophy },
+            { id: 'settings', label: 'App Settings', icon: Save },
           ].map((item) => (
             <button
               key={item.id}
@@ -614,6 +645,84 @@ export function AdminPanel() {
                 >
                   + Create New Achievement
                 </button>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="space-y-8">
+                <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
+                  <h4 className="text-white font-bold mb-6 flex items-center gap-2">
+                    <LayoutDashboard size={18} className="text-yellow-500" /> MUSEUM COLLAGE CUSTOMIZATION
+                  </h4>
+                  
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {tempCollagePhotos.map((url, index) => (
+                        <div key={index} className="space-y-4 p-4 bg-black/40 rounded-xl border border-white/5">
+                          <div className="flex justify-between items-center">
+                            <label className="block text-[10px] font-bold text-white/40 uppercase tracking-widest">Photo Frame #{index + 1}</label>
+                            <span className="text-[10px] font-mono text-yellow-500/50">ID: FRAME_{index + 1}</span>
+                          </div>
+                          
+                          <div className="flex flex-col gap-4">
+                            <input 
+                              type="text" 
+                              value={url}
+                              onChange={(e) => {
+                                const newPhotos = [...tempCollagePhotos];
+                                newPhotos[index] = e.target.value;
+                                setTempCollagePhotos(newPhotos);
+                              }}
+                              className="w-full bg-black border border-white/10 rounded-lg px-4 py-3 text-blue-400 font-mono text-[10px] focus:border-yellow-500 outline-none transition-colors"
+                              placeholder="Enter image URL..."
+                            />
+                            <div className="relative aspect-[3/4] w-full max-w-[150px] mx-auto rounded-lg overflow-hidden border-4 border-[#2a2a2a] bg-zinc-800 shadow-xl">
+                              <img 
+                                src={url} 
+                                alt={`Frame ${index + 1} Preview`} 
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800&auto=format&fit=crop';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
+                                <span className="text-[8px] text-white/60 font-bold uppercase tracking-widest">Preview</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-6 border-t border-white/5">
+                      <button 
+                        onClick={handleSaveSettingsToCloud}
+                        disabled={isSyncingSettings}
+                        className="bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-black px-8 py-3 rounded-lg font-black flex items-center gap-2 transition-all shadow-lg shadow-yellow-500/10"
+                      >
+                        {isSyncingSettings ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent" /> : <Cloud size={18} />}
+                        {isSyncingSettings ? 'SAVING COLLAGE...' : 'APPLY & SAVE TO CLOUD'}
+                      </button>
+                      <p className="mt-4 text-white/40 text-[10px] leading-relaxed">
+                        TIP: Each photo represents a frame in the museum background collage. 
+                        Changes are saved to Firebase and reflected in real-time for all users.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900 border border-white/10 rounded-xl p-8">
+                  <h4 className="text-white font-bold mb-4">System Information</h4>
+                  <div className="grid grid-cols-2 gap-4 text-[10px] font-mono">
+                    <div className="text-white/40">Environment:</div>
+                    <div className="text-green-500">Production / Holographic</div>
+                    <div className="text-white/40">Firebase Status:</div>
+                    <div className="text-green-500">Connected</div>
+                    <div className="text-white/40">Last Sync:</div>
+                    <div className="text-white/60">{new Date().toLocaleString()}</div>
+                  </div>
+                </div>
               </div>
             )}
 

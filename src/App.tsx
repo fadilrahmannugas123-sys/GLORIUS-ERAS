@@ -1,8 +1,5 @@
-import { Canvas } from '@react-three/fiber';
-import * as THREE from 'three';
 import { Suspense, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Stadium } from './components/Stadium';
 import { IntroSequence } from './components/IntroSequence';
 import { MainMenu } from './components/MainMenu';
 import { PlayerCard, PlayerPreview } from './components/PlayerCard';
@@ -14,19 +11,29 @@ import { ChevronLeft } from 'lucide-react';
 import { squadService } from './services/squadService';
 
 export default function App() {
-  const { scene, setScene, squad, achievements, updateSquad, isSaving } = useGameStore();
+  const { scene, setScene, squad, achievements, collagePhotos, updateSquad, updateCollagePhotos, isSaving } = useGameStore();
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
-
+ 
   // Initial load from Firebase
   useEffect(() => {
-    const unsubscribe = squadService.subscribeToSquad((remoteSquad) => {
+    const unsubscribeSquad = squadService.subscribeToSquad((remoteSquad) => {
       // Only update if we are not currently saving to prevent race conditions
       if (!isSaving && remoteSquad && remoteSquad.length > 0) {
         updateSquad(remoteSquad);
       }
     });
-    return () => unsubscribe();
-  }, [updateSquad, isSaving]);
+ 
+    const unsubscribeSettings = squadService.subscribeToSettings((settings) => {
+      if (!isSaving && settings.collagePhotos && settings.collagePhotos.length > 0) {
+        updateCollagePhotos(settings.collagePhotos);
+      }
+    });
+
+    return () => {
+      unsubscribeSquad();
+      unsubscribeSettings();
+    };
+  }, [updateSquad, updateCollagePhotos, isSaving]);
 
   const renderScene = () => {
     switch (scene) {
@@ -91,14 +98,56 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-black select-none">
-      {/* 3D Background Layer - Stays fixed */}
-      <div className="fixed inset-0 z-0">
-        <Canvas shadows={{ type: THREE.PCFShadowMap }}>
-          <Suspense fallback={null}>
-            <Stadium />
-          </Suspense>
-        </Canvas>
+    <div className="relative min-h-screen select-none overflow-x-hidden bg-black">
+      {/* Background Layer - Luxurious Museum Trophy Hall with Photo Collage */}
+      <div className="fixed inset-0 z-0 overflow-hidden bg-[#0a0a0a]">
+        {/* The Collage Grid */}
+        <div className="absolute inset-0 grid grid-cols-2 md:grid-cols-4 gap-8 p-12 opacity-40 scale-105">
+          {collagePhotos.map((url, index) => (
+            <motion.div 
+              key={index}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }}
+              animate={{ 
+                opacity: 1, 
+                x: index % 2 === 0 ? [0, 60, 0] : [0, -60, 0],
+                y: index % 3 === 0 ? [0, -15, 0] : [0, 15, 0],
+                rotate: index % 3 === 0 ? [0, 2, 0] : [0, -2, 0]
+              }}
+              transition={{ 
+                opacity: { duration: 1.5, delay: index * 0.2 },
+                x: { repeat: Infinity, duration: 25 + index * 5, ease: "easeInOut" },
+                y: { repeat: Infinity, duration: 30 + index * 7, ease: "easeInOut" },
+                rotate: { repeat: Infinity, duration: 35 + index * 10, ease: "easeInOut" }
+              }}
+              className="relative aspect-[3/4] group"
+            >
+              {/* Museum Frame */}
+              <div className="absolute inset-0 bg-[#1a1a1a] border-[12px] border-[#2a2a2a] shadow-2xl rounded-sm overflow-hidden">
+                <div className="absolute inset-0 border border-yellow-500/20" />
+                <div 
+                  className="w-full h-full bg-cover bg-center grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
+                  style={{ backgroundImage: `url("${url}")` }}
+                />
+                {/* Spotlight on frame */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+              </div>
+              
+              {/* Frame Shadow on "Wall" */}
+              <div className="absolute -inset-2 bg-black/40 blur-xl -z-10" />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Atmospheric Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,215,0,0.05),transparent_70%)]" />
+        
+        {/* Animated Dust Particles / Bokeh */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full blur-sm animate-pulse" />
+          <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-yellow-200 rounded-full blur-[1px] animate-pulse delay-700" />
+          <div className="absolute top-3/4 left-1/3 w-1.5 h-1.5 bg-white rounded-full blur-sm animate-pulse delay-1000" />
+        </div>
       </div>
 
       {/* UI Layer - Scrollable */}

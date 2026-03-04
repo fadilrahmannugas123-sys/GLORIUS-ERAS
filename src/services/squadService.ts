@@ -4,11 +4,38 @@ import { Player } from '../store/useGameStore';
 
 const SQUAD_COLLECTION = 'squad';
 const ACHIEVEMENTS_COLLECTION = 'achievements';
+const SETTINGS_COLLECTION = 'settings';
 
 export const squadService = {
   async getSquad(): Promise<Player[]> {
     const querySnapshot = await getDocs(collection(db, SQUAD_COLLECTION));
     return querySnapshot.docs.map(doc => doc.data() as Player);
+  },
+
+  async saveCollagePhotos(photos: string[]) {
+    try {
+      const settingsRef = doc(db, SETTINGS_COLLECTION, 'global');
+      await setDoc(settingsRef, { collagePhotos: photos }, { merge: true });
+    } catch (error) {
+      console.error('Error saving collage photos:', error);
+      throw error;
+    }
+  },
+
+  subscribeToSettings(callback: (settings: { collagePhotos?: string[] }) => void) {
+    if (!db) return () => {};
+    try {
+      return onSnapshot(doc(db, SETTINGS_COLLECTION, 'global'), (docSnap) => {
+        if (docSnap.exists()) {
+          callback(docSnap.data() as { collagePhotos?: string[] });
+        }
+      }, (error) => {
+        console.error('Firestore Settings Subscription Error:', error);
+      });
+    } catch (error) {
+      console.error('Error setting up Settings subscription:', error);
+      return () => {};
+    }
   },
 
   async savePlayer(player: Player) {
